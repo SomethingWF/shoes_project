@@ -9,9 +9,10 @@ from flask_jwt_extended import create_access_token, JWTManager, jwt_required, ge
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
+from datetime import datetime
 
 from db import db
-from models import User, Product, Category, Manufacturer, Supplier, OrderProduct
+from models import User, Product, Category, Manufacturer, Supplier, OrderProduct, Status, PickupPoint, Order
 
 load_dotenv()
 
@@ -199,6 +200,119 @@ def get_suppliers():
     """Получение поставщиков для выпадающего списка"""
     suppliers = Supplier.query.all()
     return jsonify([{"id": s.id, "name": s.name} for s in suppliers])
+
+@app.route('/api/orders', methods=['GET'])
+@jwt_required()
+def get_orders():
+    """Получение списка всех заказов с полной детализацией."""
+    orders = Order.query.all()
+    
+    result = []
+    for order in orders:
+        items = []
+        for item in order.products_in_order:
+            items.append({
+                "product_id": item.product_id,
+                "product_name": item.product.name,
+                "article": item.product.article,
+                "count": item.count,
+                "price": item.product.price
+            })
+
+        result.append({
+            "id": order.id,
+            "order_date": order.date.strftime('%Y-%m-%d'),
+            "delivery_date": order.delivery_date.strftime('%Y-%m-%d'),
+            "code": order.code,
+            "status": order.status.name,
+            "status_id": order.status_id,
+            "user_name": order.user.full_name,
+            "pickup_point": f"{order.pickup_point.city}, \
+                            {order.pickup_point.street}, \
+                            {order.pickup_point.house}",
+            "point_id": order.point_id,
+            "items": items
+        })
+
+    return jsonify(result)
+
+@app.route('/api/orders', methods=['POST'])
+@jwt_required()
+def create_order():
+    """Создание нового заказа."""
+    data = request.get_json()
+
+    try:
+        new_order = Order(
+            date=datetime.strptime(data['order_date'], '%Y-%m-%d').date(),
+            delivery_date=datetime.strptime(data['delivery_date'], '%Y-%m-%d').date(),
+            code=data['code'],
+            user_id=data['user_id'],
+            point_id=data['point_id'],
+            status_id=data['status_id']
+        )
+        db.session.add(new_order)
+        db.session.flush()
+
+        for item in data['items']:
+            new_item = OrderProduct(
+                order_id=new_order.id,
+                product_id=item['product_id'],
+                count=item['count']
+            )
+            db.session.add(new_item)
+
+        db.session.commit()
+        return jsonify({"msg": "Заказ успешно создан", "order_id": new_order.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": "Ошибка при создании заказа", "error": str(e)}), 400
+
+@app.route('/api/orders/<int:order_id>', methods=['PUT'])
+@jwt_required()
+def update_order(order_id):
+    """Обновление данных заказа (статус, дата доставки)."""
+    order = Order.query.get_or_404(order_id)
+    data = request.get_json()
+
+    if 'status_id' in data:
+        order.status_id = data['status_id']
+    if 'delivery_date' in data:
+        order.delivery_date = datetime.strptime(data['delivery_date'], '%Y-%m-%d').date()
+    if 'point_id' in data:
+        order.point_id = data['point_id']
+
+    db.session.commit()
+    return jsonify({"msg": "Заказ обновлен"})
+
+
+@app.route('/api/orders/<int:order_id>', methods=['DELETE'])
+@jwt_required()
+def delete_order(order_id):
+    """Удаление заказа (только для Админа)."""
+    if not check_is_admin():
+        return jsonify({"msg": "Доступ запрещен"}), 403
+
+    order = Order.query.get_or_404(order_id)
+
+    db.session.delete(order)
+    db.session.commit()
+    return jsonify({"msg": "Заказ успешно удален"})
+
+@app.route('/api/pickup-points', methods=['GET'])
+def get_pickup_points():
+    """Получение пунктов выдачи для выпадающего списка"""
+    points = PickupPoint.query.all()
+    return jsonify([{
+        "id": p.id, 
+        "address": f"{p.city}, {p.street}, {p.house} (индекс: {p.index})"
+    } for p in points])
+
+@app.route('/api/statuses', methods=['GET'])
+def get_order_statuses():
+    """Получение статусов заказов для выпадающего списка"""
+    statuses = Status.query.all()
+    return jsonify([{"id": s.id, "name": s.name} for s in statuses])
 
 
 if __name__ == '__main__':
