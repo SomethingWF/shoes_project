@@ -51,7 +51,73 @@ body { margin: 0; padding: 20px; background-color: #f0f0f0; }
 }
 .btn-edit { background-color: #ffc107; border: none; padding: 5px 15px; cursor: pointer; }
 .btn-delete { background-color: #dc3545; color: white; border: none; padding: 5px 15px; cursor: pointer; }
-.btn-add { background-color: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 16px; }
 
 .product-form { display: flex; flex-direction: column; gap: 10px; max-width: 600px; }
 .product-form label { font-weight: bold; }
+
+.order-card {
+  display: flex;
+  justify-content: space-between;
+  border: 2px solid #000;
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: white;
+}
+.order-main-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-grow: 1;
+}
+.order-delivery-info {
+  width: 200px;
+  border-left: 1px solid #000;
+  padding-left: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-weight: bold;
+}
+.order-items-list {
+  margin-top: 10px;
+  padding-left: 20px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.actions-bar {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+.btn-add {
+  background-color: #00FA9A;
+  color: black;
+  border: 1px solid #aaa;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: opacity 0.2s;
+}
+
+.btn-orders {
+  background-color: #00FA9A; /* Цвет акцентирования внимания из ТЗ */
+  color: black;
+  border: 1px solid #aaa;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-add:hover, .btn-view-orders:hover {
+  opacity: 0.8;
+}
+
+.btn-secondary {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 5px 15px;
+  cursor: pointer;
+}

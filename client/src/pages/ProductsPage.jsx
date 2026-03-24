@@ -69,37 +69,47 @@ const ProductsPage = () => {
         <h1>Список товаров</h1>
         <div>
           <span style={{ marginRight: '15px', fontWeight: 'bold' }}>{userFullName}</span>
-          <button onClick={handleLogout}>Выйти</button>
+          <button className="btn-logout" onClick={handleLogout}>Выйти</button>
         </div>
       </div>
 
-      {isAdmin && (
-        <div style={{ marginBottom: '20px' }}>
-          <button className="btn-add" onClick={() => navigate('/product-form')}>+ Добавить товар</button>
+      {(roleId === '1' || roleId === '2') && (
+        <div className="actions-bar">
+          {roleId === '1' && (
+            <button className="btn-add" onClick={() => navigate('/product-form')}>
+              + Добавить товар
+            </button>
+          )}
+          
+          <button className="btn-orders" onClick={() => navigate('/orders')}>
+            Просмотр заказов
+          </button>
         </div>
       )}
 
-      <div className="controls-panel">
-        <input 
-          type="text" 
-          placeholder="Поиск по названию..." 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ flexGrow: 1 }}
-        />
-        
-        <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)}>
-          <option value="all">Все поставщики</option>
-          {suppliers.map(sup => (
-            <option key={sup.id} value={sup.id}>{sup.name}</option>
-          ))}
-        </select>
+      {(roleId === '1' || roleId === '2') && (
+        <div className="controls-panel">
+          <input 
+            type="text" 
+            placeholder="Поиск по названию..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ flexGrow: 1 }}
+          />
+          
+          <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)}>
+            <option value="all">Все поставщики</option>
+            {suppliers.map(sup => (
+              <option key={sup.id} value={sup.id}>{sup.name}</option>
+            ))}
+          </select>
 
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="asc">Сначала меньше на складе</option>
-          <option value="desc">Сначала больше на складе</option>
-        </select>
-      </div>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="asc">Сначала меньше на складе</option>
+            <option value="desc">Сначала больше на складе</option>
+          </select>
+        </div>
+      )}
 
       <div className="products-list">
         {products.map(product => (

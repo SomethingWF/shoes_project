@@ -11,6 +11,7 @@ const ProductCard = ({ product, isAdmin, onEdit, onDelete }) => {
     bgColor = '#2E8B57';
   }
 
+
   const imageSrc = product.icon_link && product.icon_link !== 'picture.png'
     ? `http://127.0.0.1:5000/static/images/${product.icon_link}` 
     : '/picture.png';
@@ -38,7 +39,6 @@ const ProductCard = ({ product, isAdmin, onEdit, onDelete }) => {
         </div>
         <p><strong>На складе:</strong> {product.quantity} шт.</p>
 
-        {/* Условный рендеринг кнопок только для Админа */}
         {isAdmin && (
           <div className="admin-actions">
             <button className="btn-edit" onClick={() => onEdit(product)}>Редактировать</button>

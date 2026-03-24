@@ -3,16 +3,17 @@
 """
 
 import os
+from datetime import datetime
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, JWTManager, jwt_required, get_jwt
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_
-from datetime import datetime
 
 from db import db
-from models import User, Product, Category, Manufacturer, Supplier, OrderProduct, Status, PickupPoint, Order
+from models import User, Product, Category, Manufacturer, \
+                    Supplier, OrderProduct, Status, PickupPoint, Order
 
 load_dotenv()
 
@@ -33,6 +34,11 @@ def check_is_admin():
     if claims.get('role_id') != 1:
         return False
     return True
+
+def check_is_staff():
+    """Проверка прав персонала"""
+    claims = get_jwt()
+    return claims.get('role_id') in [1, 2]
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -206,7 +212,7 @@ def get_suppliers():
 def get_orders():
     """Получение списка всех заказов с полной детализацией."""
     orders = Order.query.all()
-    
+
     result = []
     for order in orders:
         items = []
@@ -227,6 +233,7 @@ def get_orders():
             "status": order.status.name,
             "status_id": order.status_id,
             "user_name": order.user.full_name,
+            "user_id": order.user_id,
             "pickup_point": f"{order.pickup_point.city}, \
                             {order.pickup_point.street}, \
                             {order.pickup_point.house}",
@@ -239,9 +246,12 @@ def get_orders():
 @app.route('/api/orders', methods=['POST'])
 @jwt_required()
 def create_order():
-    """Создание нового заказа."""
-    data = request.get_json()
+    """Создание нового заказа (Только для админа)."""
+    if not check_is_admin():
+        return jsonify({"msg": "Доступ запрещен"}), 403
 
+    data = request.get_json()
+    print("DEBUG: Полученные данные:", data)
     try:
         new_order = Order(
             date=datetime.strptime(data['order_date'], '%Y-%m-%d').date(),
@@ -263,10 +273,11 @@ def create_order():
             db.session.add(new_item)
 
         db.session.commit()
-        return jsonify({"msg": "Заказ успешно создан", "order_id": new_order.id}), 201
+        return jsonify({"msg": "Заказ создан"}), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({"msg": "Ошибка при создании заказа", "error": str(e)}), 400
+        print(str(e))
+        return jsonify({"msg": str(e)}), 400
 
 @app.route('/api/orders/<int:order_id>', methods=['PUT'])
 @jwt_required()
@@ -313,6 +324,15 @@ def get_order_statuses():
     """Получение статусов заказов для выпадающего списка"""
     statuses = Status.query.all()
     return jsonify([{"id": s.id, "name": s.name} for s in statuses])
+
+@app.route('/api/users', methods=['GET'])
+@jwt_required()
+def get_users():
+    """Получение списка пользователей"""
+    if not check_is_staff():
+        return jsonify({"msg": "Доступ запрещен"}), 403
+    users = User.query.all()
+    return jsonify([{"id": u.id, "name": u.full_name} for u in users])
 
 
 if __name__ == '__main__':
