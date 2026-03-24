@@ -110,7 +110,10 @@ class Product(db.Model):
             "icon_link": self.icon_link,
             "category_name": self.category.name if self.category else None,
             "manufacturer_name": self.manufacturer.name if self.manufacturer else None,
-            "supplier_name": self.supplier.name if self.supplier else None
+            "supplier_name": self.supplier.name if self.supplier else None,
+            "category_id": self.category_id,
+            "manufacturer_id": self.manufacturer_id,
+            "supplier_id": self.supplier_id
         }
 
 class Order(db.Model):

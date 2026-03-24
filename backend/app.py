@@ -46,7 +46,7 @@ def login():
         return jsonify({"msg": "Неверный логин или пароль"}), 401
 
     additional_claims = {"role_id": user.role_id}
-    access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
+    access_token = create_access_token(identity=str(user.id), additional_claims=additional_claims)
 
     return jsonify(
         access_token=access_token,
