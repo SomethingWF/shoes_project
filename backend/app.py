@@ -55,7 +55,8 @@ def get_products():
 @app.route('/static/images/<filename>')
 def serve_image(filename):
     """Получение картинок"""
-    return send_from_directory(app.config['STATIC_FOLDER'] + '/images', filename)
+    images_dir = os.path.join(app.static_folder, 'images')
+    return send_from_directory(images_dir, filename)
 
 
 if __name__ == '__main__':

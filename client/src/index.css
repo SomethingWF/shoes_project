@@ -1,0 +1,40 @@
+* { box-sizing: border-box; font-family: 'Times New Roman', Times, serif; }
+body { margin: 0; padding: 20px; background-color: #f0f0f0; }
+
+.product-card {
+  display: flex;
+  border: 2px solid #ccc;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: white;
+}
+.product-image {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  margin-right: 20px;
+}
+.product-info {
+  flex-grow: 1;
+}
+.product-discount-box {
+  width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  border-left: 1px solid #ccc;
+}
+
+.old-price { text-decoration: line-through; color: red; margin-right: 10px; }
+.new-price { color: black; font-weight: bold; font-size: 1.2em; }
+
+.login-container {
+  max-width: 400px; margin: 100px auto; padding: 20px;
+  background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.login-container input, .login-container button {
+  width: 100%; margin-bottom: 10px; padding: 10px;
+}
+.header { display: flex; justify-content: space-between; margin-bottom: 20px; }
